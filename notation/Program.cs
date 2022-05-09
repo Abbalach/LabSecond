@@ -12,16 +12,18 @@ namespace notation
         {
             while (true)
             {
-                Console.WriteLine("число:");
-                decimal number = decimal.Parse(Console.ReadLine());
+                Console.WriteLine("число 1:");
+                string number = Console.ReadLine();
 
-                Console.WriteLine("в основу:");
+                Console.WriteLine("с основы:");
                 int Base = int.Parse(Console.ReadLine());
 
-                var NewNumber = ToAnotherSystem(number, Base);
+                var Number = ToDecimalSystem(number, Base);
 
                 Console.WriteLine();
-                Console.WriteLine(NewNumber);
+                Console.WriteLine(Number);
+                Console.WriteLine();
+
             }
             
            
@@ -116,26 +118,94 @@ namespace notation
             }
             return NewNumber;
         }
-        public static decimal ToDecimalSystem(decimal number, int fromBase)
+        public static decimal ToDecimalSystem(string number, int fromBase)
         {
             decimal decNumber = 0;
 
-            string[] NumberInString = number.ToString().Split(',');
+            string[] NumberInString = number.Split(',');
 
-            if (NumberInString[0].Any(symbol => Convert.ToInt32(symbol.ToString()) >= fromBase))
+            if (fromBase <= 10)
+            {
+                if (NumberInString[0].Any(symbol => Convert.ToInt32(symbol.ToString()) >= fromBase))
+                {
+                    return decimal.MinValue;
+                }
+                if (NumberInString.Length > 1)
+                {
+                    if (NumberInString[1].Any(symbol => Convert.ToInt32(symbol.ToString()) >= fromBase))
+                    {
+                        return decimal.MinValue;
+                    }
+                }
+            }
+            
+
+            if (NumberInString[0].Any(symbol =>
+            symbol != '1' &&
+            symbol != '2' &&
+            symbol != '3' &&
+            symbol != '4' &&
+            symbol != '5' &&
+            symbol != '6' &&
+            symbol != '7' &&
+            symbol != '8' &&
+            symbol != '9' &&
+            symbol != '0' &&
+            symbol != 'A' &&
+            symbol != 'B' &&
+            symbol != 'C' &&
+            symbol != 'D' &&
+            symbol != 'E' &&
+            symbol != 'F' 
+            ))
             {
                 return decimal.MinValue;
             }
-            if (NumberInString[1].Any(symbol => Convert.ToInt32(symbol.ToString()) >= fromBase))
+            if (NumberInString.Length > 1)
             {
-                return decimal.MinValue;
+                if (NumberInString[1].Any(symbol =>
+                symbol != '1' &&
+                symbol != '2' &&
+                symbol != '3' &&
+                symbol != '4' &&
+                symbol != '5' &&
+                symbol != '6' &&
+                symbol != '7' &&
+                symbol != '8' &&
+                symbol != '9' &&
+                symbol != '0' &&
+                symbol != 'A' &&
+                symbol != 'B' &&
+                symbol != 'C' &&
+                symbol != 'D' &&
+                symbol != 'E' &&
+                symbol != 'F'))
+                {
+                    return decimal.MinValue;
+                }
             }
 
             NumberInString[0] = new string(NumberInString[0].Reverse().ToArray());
 
             for (int i = 0; i < NumberInString[0].Length; i++)
-            {
-                decNumber += Convert.ToInt32(NumberInString[0][i].ToString()) * DecimalPow(fromBase, i);
+            {               
+                if (BaseSixteen.Any(symbol => symbol.Value == NumberInString[0][i]))
+                {
+                    foreach (var symbol in BaseSixteen)
+                    {
+                        if (NumberInString[0][i] == symbol.Value)
+                        {
+                            
+                            decNumber += symbol.Key * DecimalPow(fromBase, i);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    decNumber += Convert.ToInt32(NumberInString[0][i].ToString()) * DecimalPow(fromBase, i);
+                }
+                
             }
 
             decimal FracPart = 0;
@@ -143,10 +213,58 @@ namespace notation
             {
                 for (int i = 0; i < NumberInString[1].Length; i++)
                 {
-                    FracPart += Convert.ToInt32(NumberInString[1][i].ToString()) / DecimalPow(fromBase, i+1);
+                    if (BaseSixteen.Any(symbol => symbol.Value == NumberInString[1][i]))
+                    {
+                        foreach (var symbol in BaseSixteen)
+                        {
+                            if (NumberInString[1][i] == symbol.Value)
+                            {
+                                FracPart += symbol.Key / DecimalPow(fromBase, i + 1);
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        FracPart += Convert.ToInt32(NumberInString[1][i].ToString()) / DecimalPow(fromBase, i + 1);
+                    }
+                   
                 }
             }
             return decNumber + FracPart;
+        }
+
+        public static string System(string number1, string number2, int Base, char symbol)
+        {
+            switch (symbol)
+            {
+                case '+':
+                    {
+                        var DecNumber = ToDecimalSystem(number1, Base) + ToDecimalSystem(number2, Base);
+
+                        return ToAnotherSystem(DecNumber, Base);
+                    }
+                case '-':
+                    {
+                        var DecNumber = ToDecimalSystem(number1, Base) - ToDecimalSystem(number2, Base);
+
+                        return ToAnotherSystem(DecNumber, Base);
+                    }
+                case '*':
+                    {
+                        var DecNumber = ToDecimalSystem(number1, Base) / ToDecimalSystem(number2, Base);
+
+                        return ToAnotherSystem(DecNumber, Base);
+                    }
+                case '/':
+                    {
+                        var DecNumber = ToDecimalSystem(number1, Base) * ToDecimalSystem(number2, Base);
+
+                        return ToAnotherSystem(DecNumber, Base);
+                    }
+                default:
+                    return string.Empty;
+            }
         }
 
         static public Dictionary<int, char> BaseSixteen = new Dictionary<int, char>()
